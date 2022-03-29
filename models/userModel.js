@@ -14,10 +14,25 @@ const userSchema = new mongoose.Schema({
     },
     user_address: {
         type: String,
-        required: false,
+        required: true,
         unique: false
     },
-
+    r_address: {
+        type: String,
+        trim: true
+    },
+    r_number: {
+        type: String,
+        trim: true
+    },
+    r_name: {
+        type: String,
+        trim: true
+    },
+    r_relation: {
+        type: String,
+        trim: true
+    },
     password: {
         type: String,
         require: true,
@@ -25,6 +40,7 @@ const userSchema = new mongoose.Schema({
     shope_name: {
         type: String,
         require: true,
+        required: true,
         trim: true
     },
     avatar: {
@@ -38,14 +54,65 @@ const userSchema = new mongoose.Schema({
         trim: true
     },
     number: {
-        type: Number,
+        type: String,
         require: true,
         trim: true,
 
     },
+    passport_no: {
+        type: String,
+        require: true,
+        trim: true,
+
+    },
+    bank_info: {
+        type: String,
+        trim: true,
+
+    },
+    bank_name: {
+        type: String,
+        trim: true,
+    },
+    account_name: {
+        type: String,
+        trim: true,
+    },
+    account_number: {
+        type: String,
+        trim: true,
+    },
+    bank_b_name: {
+        type: String,
+        trim: true,
+    },
+    switt_code: {
+        type: String,
+        trim: true,
+    },
+    bkash: {
+        type: String,
+        trim: true,
+    },
+    nagad: {
+        type: String,
+        trim: true,
+    },
+    nagad: {
+        type: String,
+        trim: true,
+    },
+    rocket: {
+        type: String,
+        trim: true,
+    },
     role: {
         type: Number,
         default: 0
+    },
+    status: {
+        type: String,
+        default: "Pending"
     },
     id: {
         type: Number,

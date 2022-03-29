@@ -1,13 +1,12 @@
-const uploader = require("./singleFileUpload");
+const uploader = require("../singleFileUpload");
 
 function avatarUpload(req, res, next) {
-    console.log(req.files);
-    console.log(req.body);
     const upload = uploader(
-        "avatars",
+        "avatar",
         ["image/jpeg", "image/jpg", "image/png"],
         1000000,
-        "Only .jpg, jpeg or .png format allowed!"
+        "Only .jpg, jpeg or .png format allowed!",
+        req.files
     );
 
     // call the middleware function
