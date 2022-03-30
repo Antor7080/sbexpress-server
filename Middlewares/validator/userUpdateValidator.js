@@ -10,10 +10,8 @@ const { unlink } = require("fs");
 // add user
 const updateUserValidators = [
     check("number")
-        .isMobilePhone("bn-BD", {
-            strictMode: true,
-        })
-        .withMessage("Mobile number must be a valid Bangladeshi mobile number")
+        .isLength({ min: 1 })
+        .withMessage("Number is required")
 
 
 ];

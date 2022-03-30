@@ -30,6 +30,8 @@ const addUserValidators = [
             }
         }),
     check("number")
+        .isLength({ min: 5 })
+        .withMessage("Number is required")
         /*   .isMobilePhone("bn-BD", {
               strictMode: true,
           })

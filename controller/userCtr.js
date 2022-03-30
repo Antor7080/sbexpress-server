@@ -62,7 +62,7 @@ const userCtrl = {
                 path: '/user/refresh_token',
                 maxAge: 7 * 24 * 60 * 60 * 1000 // 7d
             })
-            const userData = { email: user.email, name: user.name, number: user.number, id: user.id, role: user.role, _id: user._id }
+            const userData = { email: user.email, name: user.name, number: user.number, id: user.id, role: user.role, _id: user._id, avatar: user.avatar }
             res.json({ accesstoken, userData, msg: "Login Successfull!" })
         } catch (err) {
             return res.status(500).json({ msg: err.message })
