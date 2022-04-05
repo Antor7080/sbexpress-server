@@ -1,4 +1,6 @@
 const Users = require('../models/userModel')
+const balance = require('../models/balanceModel')
+const recharge = require('../models/rechargeModal')
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { unlink } = require("fs");
@@ -11,7 +13,6 @@ const userCtrl = {
             const email1 = email.toLowerCase()
             const passwordHash = await bcrypt.hash(password, 10)
             let newUser;
-            // console.log(req.files);
             if (req.file && req.file.length > 0) {
                 newUser = new Users({
                     ...req.body,
@@ -50,11 +51,13 @@ const userCtrl = {
         try {
             const { email, password } = req.body;
             const user = await Users.findOne({ email });
-            console.log(user);
-            console.log(user.status);
+
             if (!user) return res.status(400).json({ msg: "User does not exist." })
             const isMatch = await bcrypt.compare(password, user.password)
             if (!isMatch) return res.status(400).json({ msg: "Incorrect password." })
+            if (user.role === 0 && user.status !== "Approved") {
+                return res.status(400).json({ msg: "You can not login right now" })
+            }
             const accesstoken = createAccessToken({ id: user._id });
             const refreshtoken = createRefreshToken({ id: user._id });
             res.cookie('refreshtoken', refreshtoken, {
@@ -72,9 +75,7 @@ const userCtrl = {
 
         try {
             res.clearCookie('refreshtoken', { path: '/user/refresh_token' })
-
             return res.json({ msg: "Logged out" });
-
         } catch (err) {
             return res.status(500).json({ msg: err.message })
         }
@@ -99,7 +100,8 @@ const userCtrl = {
             const { page = 1, limit = 10, status } = req.query;
             if (status) {
                 const total = await Users.find({ status: status })
-                const user = await Users.find({ status: status }).select('-password -__v').limit(limit * 1).skip((page - 1) * limit)
+
+                const user = await Users.find({ status: status }).sort({ "createdAt": -1 }).select('-password -__v').limit(limit * 1).skip((page - 1) * limit)
                 if (!user) return res.status(400).json({ msg: "User does not exist." })
                 res.status(200).json({ total: total.length, user })
             }
@@ -124,7 +126,38 @@ const userCtrl = {
         try {
             const user = await Users.findOne({ _id: userId }).select('-password -__v')
             if (!user) return res.status(400).json({ msg: "User does not exist." })
-            res.status(200).json(user)
+
+            if (user.role === 0) {
+                const approvedBalance = await balance.find({ "user": userId, status: "Approved" })
+                const approveReacharge = await recharge.find({ "user": userId, status: "Rejected" })
+                const rejectedReacharge = await recharge.find({ "user": userId, status: "Approved" })
+                const pendingReacharge = await recharge.find({ "user": userId, status: "Pending" })
+                let rejectedReachargeAmount = rejectedReacharge.reduce((sum, item) => sum + item.amount, 0);
+                let pendingReachargeAmount = pendingReacharge.reduce((sum, item) => sum + item.amount, 0);
+                let approveReachargeAmount = approveReacharge.reduce((sum, item) => sum + item.amount, 0);
+                let approvedBalanceAmount = approvedBalance.reduce((sum, item) => sum + item.amount, 0);
+                let amount = (approvedBalanceAmount + rejectedReachargeAmount - approveReachargeAmount - pendingReachargeAmount)
+                const updateUser = await Users.findOneAndUpdate({ _id: userId }, {
+                    $set: {
+                        amount
+                    }
+                }, { new: true });
+
+                res.status(200).json(updateUser)
+            }
+            else {
+                const PendingBalance = await balance.find({ status: "Pending" });
+                let amount = PendingBalance.reduce((sum, item) => sum + item.amount, 0);
+
+                const updateUser = await Users.findOneAndUpdate({ _id: userId }, {
+                    $set: {
+                        amount
+                    }
+                }, { new: true });
+                if (updateUser) {
+                    res.status(200).json(updateUser)
+                }
+            }
 
         } catch (err) {
             return res.status(500).json({ msg: err.message })
@@ -154,7 +187,7 @@ const userCtrl = {
         const userId = req.params.id
         try {
             const user = await Users.findOne({ _id: userId })
-            console.log(user.avatar);
+
             if (req.file && req.file.filename) {
                 const updateUser = await Users.findOneAndUpdate({ _id: userId }, {
                     $set: {
@@ -171,7 +204,7 @@ const userCtrl = {
 
                 );
 
-                console.log("new", updateUser.avatar);
+
                 res.status(200).json({ msg: "Updated Successfully", updateUser: updateUser });
 
             } else {
@@ -181,7 +214,7 @@ const userCtrl = {
                     }
                 }, { new: true });
                 res.status(200).json({ msg: "Updated Successfully", updateUser: updateUser });
-                console.log(updateUser);
+
             }
 
             // Save mongodb

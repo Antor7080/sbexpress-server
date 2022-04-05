@@ -65,11 +65,7 @@ const userSchema = new mongoose.Schema({
         trim: true,
 
     },
-    bank_info: {
-        type: String,
-        trim: true,
 
-    },
     bank_name: {
         type: String,
         trim: true,
@@ -117,6 +113,10 @@ const userSchema = new mongoose.Schema({
     id: {
         type: Number,
         auto: true
+    },
+    amount: {
+        type: Number,
+        default: 0,
     }
 
 },

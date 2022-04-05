@@ -9,7 +9,6 @@ const bodyParser = require('body-parser');
 const app = express()
 app.use(express.json())
 app.use(cookieParser())
-
 app.use(cors());
 
 // app.use(express.urlencoded());
@@ -25,7 +24,9 @@ app.all('/', function (req, res, next) {
 app.use('/user', require('./router/userRouter'))
 app.use('/balance', require('./router/balanceRouter'))
 app.use('/recharge', require('./router/rechargeRouter'))
+app.use('/TotalAmount', require('./router/TotalAmount'))
 app.use('/uploads', express.static('./uploads'))
+
 // app.use('/api', require('./routes/categoryRouter'))
 // app.use('/api', require('./routes/upload'))
 // app.use('/api', require('./routes/productRouter'))

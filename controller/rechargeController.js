@@ -1,18 +1,30 @@
 const recharge = require('../models/rechargeModal');
+const Users = require('../models/userModel')
 
 const rechargeController = {
     addRecharge: async (req, res) => {
         const { amount, number, simOperator } = req.body;
+        const _id = req.userId
+        const user = await Users.findById({ _id })
+        const intAmount = parseInt(amount)
         if (simOperator === "Select Sim Operator") {
             return res.status(400).json({ msg: "Select Sim Operator" })
         }
+        if (user.amount < intAmount) {
+            return res.status(400).json({
+                errors: {
+                    amount: {
+                        msg: "You Dont Have enogh balance to recharge"
+                    }
+                }
+            })
+        };
         try {
             const data = await new recharge({
                 user: req.userId,
-                amount,
+                amount: intAmount,
                 number,
                 simOperator
-
             })
             const updateRecharge = await data.save();
             res.status(200).json({ msg: "Recharge Request Submitted Successfully", updateRecharge });
@@ -27,24 +39,23 @@ const rechargeController = {
             const id = req.userId
             if (status && !email) {
                 const total = await recharge.find({ status: status })
-                console.log("total", total);
-                const recharge_request = await recharge.find({ status: status }).populate("user", "name email -_id shope_name number ").limit(limit * 1).skip((page - 1) * limit)
+                const recharge_request = await recharge.find({ status: status }).sort({ "invoice": -1 }).populate("user", "name email -_id shope_name number ").limit(limit * 1).skip((page - 1) * limit)
                 res.status(200).json({ total: total.length, data: recharge_request })
             };
             if (email && status) {
                 const total = await recharge.find({ status: status, "user": id })
-                const recharge_request = await recharge.find({ status: status, "user": id }).populate("user", "name email -_id shope_name number ").limit(limit * 1).skip((page - 1) * limit)
+                const recharge_request = await recharge.find({ status: status, "user": id }).sort({ "invoice": -1 }).populate("user", "name email -_id shope_name number ").limit(limit * 1).skip((page - 1) * limit)
                 res.status(200).json({ total: total.length, data: recharge_request })
             };
 
             if (!status && !email) {
                 const total = await recharge.find()
-                const recharge_request = await recharge.find().populate("user", "name email -_id shope_name number ").limit(limit * 1).skip((page - 1) * limit) //items.rechargeId
+                const recharge_request = await recharge.find().sort({ "invoice": -1 }).populate("user", "name email -_id shope_name number ").limit(limit * 1).skip((page - 1) * limit) //items.rechargeId
                 res.status(200).json({ total: total.length, data: recharge_request })
             }
             if (!status && email) {
                 const total = await recharge.find({ "user": id })
-                const recharge_request = await recharge.find({ "user": id }).populate("user", "name email -_id shope_name number ").limit(limit * 1).skip((page - 1) * limit)
+                const recharge_request = await recharge.find({ "user": id }).sort({ "invoice": -1 }).populate("user", "name email -_id shope_name number ").limit(limit * 1).skip((page - 1) * limit)
                 res.status(200).json({ total: total.length, data: recharge_request })
             }
         } catch (error) {
@@ -62,18 +73,14 @@ const rechargeController = {
             res.status(400).json(error)
         }
     },
-
     update: async (req, res) => {
-
         const rechargeId = req.params.id
         const { status, note, amount, simOperator } = req.body
         const newBalacne = parseInt(amount);
         if (simOperator === "Select Sim Operator") {
             return res.status(400).json({ msg: "Select Sim Operator" })
         }
-
         try {
-
             if (note && status) {
                 const updaterecharge = await recharge.findOneAndUpdate({ _id: rechargeId }, {
                     $set: {
@@ -99,10 +106,8 @@ const rechargeController = {
                         simOperator
                     }
                 }, { new: true });
-                console.log(updaterecharge);
                 res.status(200).json({ msg: "Updated Successfully", updaterecharge: updaterecharge });
             }
-
         } catch (error) {
             res.status(400).json(error);
         }

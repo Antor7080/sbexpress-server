@@ -1,25 +1,19 @@
 const router = require('express').Router();
 const balance = require('../models/balanceModel');
-const auth = require('../Middlewares/auth')
+const Users = require('../models/userModel')
+const auth = require('../Middlewares/auth');
+const { balanceValidator, balanceValidatorHandle } = require('../Middlewares/validator/balanceValidator');
 
-router.post('/add-balance', auth, async (req, res) => {
+router.post('/add-balance', auth, balanceValidator, balanceValidatorHandle, async (req, res) => {
     const { amount, payment_method } = req.body;
     const newAmount = parseInt(amount);
-    if (!newAmount) {
-        return res.status(400).json({ msg: "Amount is Required " })
-    }
-    if (newAmount < 999) {
-        return res.status(400).json({ msg: "Amount Minimum " + 1000 })
-    };
-    if (payment_method === "Select the payment method") {
-        return res.status(400).json({ msg: "Select the payment method" })
-    }
     try {
         const data = await new balance({
             user: req.userId,
             amount: newAmount,
             payment_method
         })
+
         const updateBalance = await data.save();
         res.status(200).json(updateBalance);
     } catch (error) {
@@ -34,24 +28,25 @@ router.get('/all-balance-request', auth, async (req, res) => { //
         const id = req.userId
         if (status && !email) {
             const total = await balance.find({ status: status })
-            console.log("total", total);
-            const balance_request = await balance.find({ status: status }).populate("user", "name email -_id shope_name number ").limit(limit * 1).skip((page - 1) * limit)
+
+            const balance_request = await balance.find({ status: status }).sort({ "invoice": -1 }).populate("user", "name email -_id shope_name number ").limit(limit * 1).skip((page - 1) * limit)
             res.status(200).json({ total: total.length, data: balance_request })
+
         };
         if (email && status) {
             const total = await balance.find({ status: status, "user": id })
-            const balance_request = await balance.find({ status: status, "user": id }).populate("user", "name email -_id shope_name number ").limit(limit * 1).skip((page - 1) * limit)
+            const balance_request = await balance.find({ status: status, "user": id }).sort({ "invoice": -1 }).populate("user", "name email -_id shope_name number ").limit(limit * 1).skip((page - 1) * limit)
             res.status(200).json({ total: total.length, data: balance_request })
         };
 
         if (!status && !email) {
             const total = await balance.find()
-            const balance_request = await balance.find().populate("user", "name email -_id shope_name number ").limit(limit * 1).skip((page - 1) * limit) //items.BalanceId
+            const balance_request = await balance.find().sort({ "invoice": -1 }).populate("user", "name email -_id shope_name number ").limit(limit * 1).skip((page - 1) * limit) //items.BalanceId
             res.status(200).json({ total: total.length, data: balance_request })
         }
         if (!status && email) {
             const total = await balance.find({ "user": id })
-            const balance_request = await balance.find({ "user": id }).populate("user", "name email -_id shope_name number ").limit(limit * 1).skip((page - 1) * limit)
+            const balance_request = await balance.find({ "user": id }).sort({ "invoice": -1 }).populate("user", "name email -_id shope_name number ").limit(limit * 1).skip((page - 1) * limit)
             res.status(200).json({ total: total.length, data: balance_request })
         }
     } catch (error) {
@@ -63,7 +58,6 @@ router.get('/all-balance-request', auth, async (req, res) => { //
 
 router.get('/all-balance-request/:id', auth, async (req, res) => { // 
     const BalanceId = req.params.id
-
     try {
         const balance_request = await balance.findOne({ _id: BalanceId }).populate("user", "name email -_id shope_name number ") //items.BalanceId
         res.status(200).json(balance_request)
@@ -73,13 +67,10 @@ router.get('/all-balance-request/:id', auth, async (req, res) => { //
 });
 
 router.put("/update/:id", auth, async (req, res) => {
-
     const BalanceId = req.params.id
     const { status, note, amount } = req.body
-    console.log(req.body);
     const newBalacne = parseInt(amount)
     try {
-
         if (note && status) {
             const updateBalance = await balance.findOneAndUpdate({ _id: BalanceId }, {
                 $set: {
@@ -104,7 +95,7 @@ router.put("/update/:id", auth, async (req, res) => {
                     status
                 }
             }, { new: true });
-            console.log(updateBalance);
+
             res.status(200).json({ msg: "Updated Successfully", updateBalance: updateBalance });
         }
 
