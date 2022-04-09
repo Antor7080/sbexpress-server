@@ -1,12 +1,25 @@
 const { check, validationResult } = require("express-validator");
 const createError = require("http-errors");
+const Users = require('../../models/userModel')
 
 const rechargeValidator = [
     check("amount")
         .isLength({ min: 1 })
         .withMessage("Amount is required")
-        .trim(),
+        .trim()
+        .custom(async (value, req) => {
+            const userId = req.req.userId
+            const user = await Users.findOne({ _id: userId })
 
+            try {
+                if (user.amount < parseInt(value)) {
+                    throw createError("You dont have sufficient balance to recharge!");
+                }
+            } catch (err) {
+                throw createError(err.message);
+            }
+        })
+    ,
     check("number")
         .isLength({ min: 1 })
         .withMessage("Mobile number must be a valid mobile number"),
@@ -41,3 +54,4 @@ module.exports = {
     rechargeValidator,
     rechargeValidatorHandle,
 };
+

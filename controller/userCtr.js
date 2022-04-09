@@ -13,7 +13,7 @@ const userCtrl = {
             const email1 = email.toLowerCase()
             const passwordHash = await bcrypt.hash(password, 10)
             let newUser;
-            if (req.file && req.file.length > 0) {
+            if (req.file && req.file.filename) {
                 newUser = new Users({
                     ...req.body,
                     avatar: req.file.filename,
@@ -129,14 +129,14 @@ const userCtrl = {
 
             if (user.role === 0) {
                 const approvedBalance = await balance.find({ "user": userId, status: "Approved" })
-                const approveReacharge = await recharge.find({ "user": userId, status: "Rejected" })
-                const rejectedReacharge = await recharge.find({ "user": userId, status: "Approved" })
+                const approveReacharge = await recharge.find({ "user": userId, status: "Approved" })
+                const rejectedReacharge = await recharge.find({ "user": userId, status: "Rejected" })
                 const pendingReacharge = await recharge.find({ "user": userId, status: "Pending" })
                 let rejectedReachargeAmount = rejectedReacharge.reduce((sum, item) => sum + item.amount, 0);
                 let pendingReachargeAmount = pendingReacharge.reduce((sum, item) => sum + item.amount, 0);
                 let approveReachargeAmount = approveReacharge.reduce((sum, item) => sum + item.amount, 0);
                 let approvedBalanceAmount = approvedBalance.reduce((sum, item) => sum + item.amount, 0);
-                let amount = (approvedBalanceAmount + rejectedReachargeAmount - approveReachargeAmount - pendingReachargeAmount)
+                let amount = (approvedBalanceAmount - approveReachargeAmount - pendingReachargeAmount)
                 const updateUser = await Users.findOneAndUpdate({ _id: userId }, {
                     $set: {
                         amount
