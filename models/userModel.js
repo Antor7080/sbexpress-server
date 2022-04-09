@@ -117,6 +117,14 @@ const userSchema = new mongoose.Schema({
     amount: {
         type: Number,
         default: 0,
+    },
+    pending_recaharge: {
+        type: Number,
+        default: 0,
+    },
+    total_pending: {
+        type: Number,
+        default: 0,
     }
 
 },

@@ -139,6 +139,7 @@ const userCtrl = {
                 let amount = (approvedBalanceAmount - approveReachargeAmount - pendingReachargeAmount)
                 const updateUser = await Users.findOneAndUpdate({ _id: userId }, {
                     $set: {
+                        pending_recaharge: pendingReachargeAmount,
                         amount
                     }
                 }, { new: true });
@@ -146,12 +147,16 @@ const userCtrl = {
                 res.status(200).json(updateUser)
             }
             else {
+                const pendingReacharge = await recharge.find({ status: "Pending" })
+                let pendingReachargeAmount = pendingReacharge.reduce((sum, item) => sum + item.amount, 0);
                 const PendingBalance = await balance.find({ status: "Pending" });
                 let amount = PendingBalance.reduce((sum, item) => sum + item.amount, 0);
 
                 const updateUser = await Users.findOneAndUpdate({ _id: userId }, {
                     $set: {
-                        amount
+                        amount,
+                        pending_recaharge: pendingReachargeAmount,
+                        total_pending: pendingReacharge.length
                     }
                 }, { new: true });
                 if (updateUser) {
