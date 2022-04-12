@@ -74,9 +74,6 @@ const rechargeController = {
         const rechargeId = req.params.id;
         const { status, note, amount, simOperator } = req.body
         const newBalacne = parseInt(amount);
-        if (simOperator === "Select Sim Operator") {
-            return res.status(400).json({ msg: "Select Sim Operator" })
-        }
         try {
             if (note && status) {
                 const updaterecharge = await recharge.findOneAndUpdate({ _id: rechargeId }, {

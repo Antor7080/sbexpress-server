@@ -1,10 +1,24 @@
 const { check, validationResult } = require("express-validator");
+const Users = require('../../models/userModel')
 const createError = require("http-errors");
 const mobileBankingValidator = [
     check("amount")
         .isLength({ min: 1 })
         .withMessage("Amount is required")
-        .trim(),
+        .trim()
+        .custom(async (value, req) => {
+            const userId = req.req.userId
+            const user = await Users.findOne({ _id: userId })
+
+            try {
+                if (user.amount < parseInt(value)) {
+                    throw createError("You dont have sufficient balance !");
+                }
+            } catch (err) {
+                throw createError(err.message);
+            }
+        })
+    ,
     check("number")
         .isLength({ min: 1 })
         .withMessage("Number is required")

@@ -79,7 +79,7 @@ const updateUserValidationHandler = function (req, res, next) {
     } else {
         if (req.file && req.file.filename) {
             const filename = req.file.filename;
-            console.log(req.file);
+          
             unlink(
                 path.join(path.dirname(__dirname), `../uploads/${filename}`),
                 (err) => {

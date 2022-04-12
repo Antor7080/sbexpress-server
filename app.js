@@ -28,12 +28,6 @@ app.use('/mobile-banking', require('./router/mobileBankingRouter'))
 app.use('/TotalAmount', require('./router/TotalAmount'))
 app.use('/uploads', express.static('./uploads'))
 
-// app.use('/api', require('./routes/categoryRouter'))
-// app.use('/api', require('./routes/upload'))
-// app.use('/api', require('./routes/productRouter'))
-// app.use('/api', require('./routes/paymentRouter'))
-
-
 
 // Connect to mongodb
 const URI = process.env.MONGO_CONNECTION_STRING

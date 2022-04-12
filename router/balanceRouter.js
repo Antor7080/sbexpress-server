@@ -45,8 +45,10 @@ router.get('/all-balance-request', auth, async (req, res) => { //
             res.status(200).json({ total: total.length, data: balance_request })
         }
         if (!status && email) {
+   
             const total = await balance.find({ "user": id })
             const balance_request = await balance.find({ "user": id }).sort({ "invoice": -1 }).populate("user", "name email -_id shope_name number ").limit(limit * 1).skip((page - 1) * limit)
+         
             res.status(200).json({ total: total.length, data: balance_request })
         }
     } catch (error) {
@@ -60,6 +62,7 @@ router.get('/all-balance-request/:id', auth, async (req, res) => { //
     const BalanceId = req.params.id
     try {
         const balance_request = await balance.findOne({ _id: BalanceId }).populate("user", "name email -_id shope_name number ") //items.BalanceId
+
         res.status(200).json(balance_request)
     } catch (error) {
         res.status(400).json(error)

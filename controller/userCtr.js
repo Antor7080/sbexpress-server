@@ -1,6 +1,7 @@
 const Users = require('../models/userModel')
 const balance = require('../models/balanceModel')
 const recharge = require('../models/rechargeModal')
+const mobileBanking = require('../models/MobileBankingModal')
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { unlink } = require("fs");
@@ -132,11 +133,15 @@ const userCtrl = {
                 const approveReacharge = await recharge.find({ "user": userId, status: "Approved" })
                 const rejectedReacharge = await recharge.find({ "user": userId, status: "Rejected" })
                 const pendingReacharge = await recharge.find({ "user": userId, status: "Pending" })
+                const pendingMobileBanking = await mobileBanking.find({ "user": userId, status: "Pending" })
+                const approvedMobileBanking = await mobileBanking.find({ "user": userId, status: "Approved" })
+                let pendingMobileBankingAmount = pendingMobileBanking.reduce((sum, item) => sum + item.amount, 0);
+                let approvedMobileBankingAmount = approvedMobileBanking.reduce((sum, item) => sum + item.amount, 0);
                 let rejectedReachargeAmount = rejectedReacharge.reduce((sum, item) => sum + item.amount, 0);
                 let pendingReachargeAmount = pendingReacharge.reduce((sum, item) => sum + item.amount, 0);
                 let approveReachargeAmount = approveReacharge.reduce((sum, item) => sum + item.amount, 0);
                 let approvedBalanceAmount = approvedBalance.reduce((sum, item) => sum + item.amount, 0);
-                let amount = (approvedBalanceAmount - approveReachargeAmount - pendingReachargeAmount)
+                let amount = (approvedBalanceAmount - (approveReachargeAmount + pendingReachargeAmount + approvedMobileBankingAmount + pendingMobileBankingAmount))
                 const updateUser = await Users.findOneAndUpdate({ _id: userId }, {
                     $set: {
                         pending_recaharge: pendingReachargeAmount,
@@ -147,16 +152,20 @@ const userCtrl = {
                 res.status(200).json(updateUser)
             }
             else {
+                const pendingMobileBanking = await mobileBanking.find({ status: "Pending" })
+
                 const pendingReacharge = await recharge.find({ status: "Pending" })
                 let pendingReachargeAmount = pendingReacharge.reduce((sum, item) => sum + item.amount, 0);
                 const PendingBalance = await balance.find({ status: "Pending" });
                 let amount = PendingBalance.reduce((sum, item) => sum + item.amount, 0);
-
+                let pendingMobileBankingAmount = pendingMobileBanking.reduce((sum, item) => sum + item.amount, 0);
                 const updateUser = await Users.findOneAndUpdate({ _id: userId }, {
                     $set: {
                         amount,
                         pending_recaharge: pendingReachargeAmount,
-                        total_pending: pendingReacharge.length
+                        total_pending: pendingReacharge.length,
+                        pending_Mobile_Banking_Amount: pendingMobileBankingAmount,
+                        mobileBCount: pendingMobileBanking.length
                     }
                 }, { new: true });
                 if (updateUser) {

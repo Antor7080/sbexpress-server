@@ -10,10 +10,13 @@ const MobileBankingController = {
             return res.status(400).json({
                 errors: {
                     amount: {
-                        msg: "You Dont Have enough balance to mobileBanking"
-                    }
+                        msg: "You dont Have sufficient balance to mobileBanking"
+                    },
+
                 }
-            })
+            }
+
+            )
         };
         try {
             const data = await new mobileBanking({
@@ -31,7 +34,7 @@ const MobileBankingController = {
     },
 
     getMobileBanking: async (req, res) => {
-
+ 
         try {
             const { page = 1, limit = 10, status, email } = req.query;
             const id = req.userId;
@@ -61,6 +64,66 @@ const MobileBankingController = {
         };
 
     },
+    getSingleMobileBankingInfo: async (req, res) => {
+        const mobileBankingId = req.params.id
+
+        try {
+            const mobileBanking_request = await mobileBanking.findById(mobileBankingId).populate("user", "name email -_id shope_name number "); //items.mobileBankingId
+            res.status(200).json(mobileBanking_request);
+        } catch (error) {
+            res.status(400).json(error)
+        };
+    },
+
+    update: async (req, res) => {
+        const mobileBankingId = req.params.id;
+     
+        const { status, note, amount, Mobile_Banking_Operator, type } = req.body
+        const newBalacne = parseInt(amount);
+        try {
+            if (amount && type && Mobile_Banking_Operator) {
+                const updatemobileBanking = await mobileBanking.findOneAndUpdate({ _id: mobileBankingId }, {
+                    $set: {
+                        ...req.body
+                    }
+                }, { new: true });
+                res.status(200).json({ msg: "Updated Successfully", updatemobileBanking: updatemobileBanking });
+            }
+            else if (note && status) {
+
+                const updatemobileBanking = await mobileBanking.findOneAndUpdate({ _id: mobileBankingId }, {
+                    $set: {
+                        status,
+                        note
+                    }
+                }, { new: true });
+                res.status(200).json({ msg: "Updated Successfully", updatemobileBanking: updatemobileBanking });
+            }
+            else if (!note && status && !amount) {
+          
+                const updatemobileBanking = await mobileBanking.findOneAndUpdate({ _id: mobileBankingId }, {
+                    $set: {
+                        status
+                    }
+                }, { new: true });
+                res.status(200).json({ msg: "Updated Successfully", updatemobileBanking: updatemobileBanking });
+            }
+            else if (amount && status && Mobile_Banking_Operator) {
+         
+                const updatemobileBanking = await mobileBanking.findOneAndUpdate({ _id: mobileBankingId }, {
+                    $set: {
+                        amount: newBalacne,
+                        status,
+                        Mobile_Banking_Operator
+                    }
+                }, { new: true });
+                res.status(200).json({ msg: "Updated Successfully", updatemobileBanking: updatemobileBanking });
+            }
+        } catch (error) {
+            res.status(400).json(error);
+
+        }
+    }
 
 };
 module.exports = MobileBankingController;

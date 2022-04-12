@@ -94,10 +94,7 @@ const userSchema = new mongoose.Schema({
         type: String,
         trim: true,
     },
-    nagad: {
-        type: String,
-        trim: true,
-    },
+ 
     rocket: {
         type: String,
         trim: true,
@@ -125,8 +122,15 @@ const userSchema = new mongoose.Schema({
     total_pending: {
         type: Number,
         default: 0,
+    },
+    pending_Mobile_Banking_Amount: {
+        type: Number,
+        default: 0
+    },
+    mobileBCount: {
+        type: Number,
+        default: 0
     }
-
 },
     {
         timestamps: true
