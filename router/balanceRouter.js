@@ -29,26 +29,26 @@ router.get('/all-balance-request', auth, async (req, res) => { //
         if (status && !email) {
             const total = await balance.find({ status: status })
 
-            const balance_request = await balance.find({ status: status }).sort({ "invoice": -1 }).populate("user", "name email -_id shope_name number ").limit(limit * 1).skip((page - 1) * limit)
+            const balance_request = await balance.find({ status: status }).sort({ "updatedAt": -1 }).populate("user", "name email -_id shope_name number ").limit(limit * 1).skip((page - 1) * limit)
             res.status(200).json({ total: total.length, data: balance_request })
 
         };
         if (email && status) {
             const total = await balance.find({ status: status, "user": id })
-            const balance_request = await balance.find({ status: status, "user": id }).sort({ "invoice": -1 }).populate("user", "name email -_id shope_name number ").limit(limit * 1).skip((page - 1) * limit)
+            const balance_request = await balance.find({ status: status, "user": id }).sort({ "updatedAt": -1 }).populate("user", "name email -_id shope_name number ").limit(limit * 1).skip((page - 1) * limit)
             res.status(200).json({ total: total.length, data: balance_request })
         };
 
         if (!status && !email) {
             const total = await balance.find()
-            const balance_request = await balance.find().sort({ "invoice": -1 }).populate("user", "name email -_id shope_name number ").limit(limit * 1).skip((page - 1) * limit) //items.BalanceId
+            const balance_request = await balance.find().sort({ "updatedAt": -1 }).populate("user", "name email -_id shope_name number ").limit(limit * 1).skip((page - 1) * limit) //items.BalanceId
             res.status(200).json({ total: total.length, data: balance_request })
         }
         if (!status && email) {
-   
+
             const total = await balance.find({ "user": id })
-            const balance_request = await balance.find({ "user": id }).sort({ "invoice": -1 }).populate("user", "name email -_id shope_name number ").limit(limit * 1).skip((page - 1) * limit)
-         
+            const balance_request = await balance.find({ "user": id }).sort({ "updatedAt": -1 }).populate("user", "name email -_id shope_name number ").limit(limit * 1).skip((page - 1) * limit)
+
             res.status(200).json({ total: total.length, data: balance_request })
         }
     } catch (error) {

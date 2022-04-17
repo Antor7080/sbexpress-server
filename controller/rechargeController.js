@@ -36,23 +36,23 @@ const rechargeController = {
             const id = req.userId;
             if (status && !email) {
                 const total = await recharge.find({ status: status })
-                const recharge_request = await recharge.find({ status: status }).sort({ "invoice": -1 }).populate("user", "name email -_id shope_name number ").limit(limit * 1).skip((page - 1) * limit);
+                const recharge_request = await recharge.find({ status: status }).sort({ "updatedAt": -1 }).populate("user", "name email -_id shope_name number ").limit(limit * 1).skip((page - 1) * limit);
                 res.status(200).json({ total: total.length, data: recharge_request })
             };
             if (email && status) {
                 const total = await recharge.find({ status: status, "user": id })
-                const recharge_request = await recharge.find({ status: status, "user": id }).sort({ "invoice": -1 }).populate("user", "name email -_id shope_name number ").limit(limit * 1).skip((page - 1) * limit);
+                const recharge_request = await recharge.find({ status: status, "user": id }).sort({ "updatedAt": -1 }).populate("user", "name email -_id shope_name number ").limit(limit * 1).skip((page - 1) * limit);
                 res.status(200).json({ total: total.length, data: recharge_request })
             };
 
             if (!status && !email) {
                 const total = await recharge.find()
-                const recharge_request = await recharge.find().sort({ "invoice": -1 }).populate("user", "name email -_id shope_name number ").limit(limit * 1).skip((page - 1) * limit) //items.rechargeId
+                const recharge_request = await recharge.find().sort({ "updatedAt": -1 }).populate("user", "name email -_id shope_name number ").limit(limit * 1).skip((page - 1) * limit) //items.rechargeId
                 res.status(200).json({ total: total.length, data: recharge_request })
             };
             if (!status && email) {
                 const total = await recharge.find({ "user": id })
-                const recharge_request = await recharge.find({ "user": id }).sort({ "invoice": -1 }).populate("user", "name email -_id shope_name number ").limit(limit * 1).skip((page - 1) * limit)
+                const recharge_request = await recharge.find({ "user": id }).sort({ "updatedAt": -1 }).populate("user", "name email -_id shope_name number ").limit(limit * 1).skip((page - 1) * limit)
                 res.status(200).json({ total: total.length, data: recharge_request })
             };
         } catch (error) {

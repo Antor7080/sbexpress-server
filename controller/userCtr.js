@@ -6,7 +6,9 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { unlink } = require("fs");
 const path = require("path");
+let refreshTokens = [];
 const userCtrl = {
+
     register: async (req, res) => {
         try {
             const { name, email, password, shope_name, shop_address, number, user_address, } = req.body;
@@ -61,30 +63,38 @@ const userCtrl = {
             }
             const accesstoken = createAccessToken({ id: user._id });
             const refreshtoken = createRefreshToken({ id: user._id });
-            res.cookie('refreshtoken', refreshtoken, {
-                httpOnly: true,
-                path: '/user/refresh_token',
-                maxAge: 7 * 24 * 60 * 60 * 1000 // 7d
-            })
+
+            refreshTokens.push(refreshtoken);
             const userData = { email: user.email, name: user.name, number: user.number, id: user.id, role: user.role, _id: user._id, avatar: user.avatar }
-            res.json({ accesstoken, userData, msg: "Login Successfull!" })
+
+            res.json({ accesstoken, refreshtoken, userData, msg: "Login Successfull!" })
         } catch (err) {
             return res.status(500).json({ msg: err.message })
         }
     },
     logout: async (req, res) => {
-
+        const refreshToken = req.header("Authorization")
         try {
-            res.clearCookie('refreshtoken', { path: '/user/refresh_token' })
+            // res.clearCookie('refreshtoken', { path: '/user/refresh_token' })
+            refreshTokens = refreshTokens.filter((token) => token !== refreshToken);
             return res.json({ msg: "Logged out" });
         } catch (err) {
             return res.status(500).json({ msg: err.message })
         }
     },
     refreshToken: (req, res) => {
+        const rf_token = req.header("Authorization")
+        if (!rf_token) return res.status(400).json({ msg: "Please Login or Register" })
+        if (!refreshTokens.includes(rf_token)) {
+            res.status(403).json({
+                errors: [
+                    {
+                        msg: "Invalid refresh token",
+                    },
+                ],
+            });
+        }
         try {
-            const rf_token = req.cookies.refreshtoken;
-            if (!rf_token) return res.status(400).json({ msg: "Please Login or Register" })
             jwt.verify(rf_token, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
                 if (err) return res.status(400).json({ msg: "Please Login or Register" })
                 const accesstoken = createAccessToken({ id: user.id })
@@ -145,7 +155,11 @@ const userCtrl = {
                 const updateUser = await Users.findOneAndUpdate({ _id: userId }, {
                     $set: {
                         pending_recaharge: pendingReachargeAmount,
-                        amount
+                        total_pending: pendingReacharge.length,
+                        amount,
+                        pending_Mobile_Banking_Amount: pendingMobileBankingAmount,
+                        mobileBCount: pendingMobileBanking.length
+
                     }
                 }, { new: true });
 
@@ -153,7 +167,6 @@ const userCtrl = {
             }
             else {
                 const pendingMobileBanking = await mobileBanking.find({ status: "Pending" })
-
                 const pendingReacharge = await recharge.find({ status: "Pending" })
                 let pendingReachargeAmount = pendingReacharge.reduce((sum, item) => sum + item.amount, 0);
                 const PendingBalance = await balance.find({ status: "Pending" });
@@ -242,7 +255,7 @@ const userCtrl = {
     }
 }
 const createAccessToken = (user) => {
-    return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1100m' })
+    return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '30d' })
 }
 const createRefreshToken = (user) => {
     return jwt.sign(user, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '7d' })

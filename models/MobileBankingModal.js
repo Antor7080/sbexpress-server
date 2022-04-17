@@ -32,6 +32,10 @@ const MobileBankingModalSchema = new mongoose.Schema({
         required: true,
         trim: true
     },
+    note: {
+        type: String,
+        trim: true
+    },
     user: {
         type: mongoose.Types.ObjectId,
         ref: "Users"
@@ -45,7 +49,7 @@ autoIncrement.initialize(mongoose.connection);
 MobileBankingModalSchema.plugin(autoIncrement.plugin, {
     model: "post", // collection or table name in which you want to apply auto increment
     field: "invoice", // field of model which you want to auto increment
-    startAt: 1000000, // start your auto increment value from 1
+    startAt: 100, // start your auto increment value from 1
     incrementBy: 1, // incremented by 1
 })
 module.exports = mongoose.model('mobileBanking', MobileBankingModalSchema);
