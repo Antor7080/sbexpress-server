@@ -28,6 +28,7 @@ app.use('/user', require('./router/userRouter'))
 app.use('/balance', require('./router/balanceRouter'))
 app.use('/recharge', require('./router/rechargeRouter'))
 app.use('/mobile-banking', require('./router/mobileBankingRouter'))
+app.use('/notice', require('./router/noticeRouter'))
 app.use('/TotalAmount', require('./router/TotalAmount'))
 app.use('/uploads', express.static('./uploads'))
 
