@@ -17,19 +17,13 @@ const userSchema = new mongoose.Schema({
         required: true,
         unique: false
     },
-    r_address: {
+    username: {
         type: String,
-        trim: true
+        required: true,
+        unique: false
     },
-    r_number: {
-        type: String,
-        trim: true
-    },
+
     r_name: {
-        type: String,
-        trim: true
-    },
-    r_relation: {
         type: String,
         trim: true
     },
@@ -47,58 +41,12 @@ const userSchema = new mongoose.Schema({
         type: String,
 
     },
-
-    shop_address: {
-        type: String,
-        require: true,
-        trim: true
-    },
     number: {
         type: String,
         require: true,
         trim: true,
-
-    },
-    passport_no: {
-        type: String,
-        require: true,
-        trim: true,
-
     },
 
-    bank_name: {
-        type: String,
-        trim: true,
-    },
-    account_name: {
-        type: String,
-        trim: true,
-    },
-    account_number: {
-        type: String,
-        trim: true,
-    },
-    bank_b_name: {
-        type: String,
-        trim: true,
-    },
-    switt_code: {
-        type: String,
-        trim: true,
-    },
-    bkash: {
-        type: String,
-        trim: true,
-    },
-    nagad: {
-        type: String,
-        trim: true,
-    },
- 
-    rocket: {
-        type: String,
-        trim: true,
-    },
     role: {
         type: Number,
         default: 0
@@ -130,6 +78,13 @@ const userSchema = new mongoose.Schema({
     mobileBCount: {
         type: Number,
         default: 0
+    },
+    deposit: {
+        type: Number,
+        default: 0
+    },
+    country: {
+        type: String
     }
 },
     {

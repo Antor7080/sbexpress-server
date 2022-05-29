@@ -8,7 +8,7 @@ const auth = (req, res, next) => {
 
         const decode = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
         const { id } = decode;
-    
+
         req.userId = id;
         next()
     } catch (err) {

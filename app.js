@@ -14,10 +14,9 @@ app.use(cors({
     credentials: true
 }));
 
-// app.use(express.urlencoded());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-// app.use(bodyParser());
+
 app.all('/', function (req, res, next) {
     res.header('Access-Control-Allow-Origin', '/*');
     res.header('Access-Control-Allow-Headers', 'Content-Type,accept,access_token,X-Requested-With');
@@ -42,8 +41,6 @@ mongoose.connect(URI, {
     if (err) throw err;
     console.log('Connected to MongoDB')
 })
-
-
 
 app.get('/', (req, res) => {
     res.send('Welcome')

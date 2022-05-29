@@ -6,6 +6,7 @@ const { unlink } = require("fs");
 
 // internal imports
 const User = require("../../models/userModel");
+const { isNumber } = require("util");
 
 // add user
 const addUserValidators = [
@@ -29,6 +30,34 @@ const addUserValidators = [
                 throw createError(err.message);
             }
         }),
+    check("username")
+        .isLength({ min: 1 })
+        .withMessage("Username is required")
+        .trim()
+        .custom(async (value) => {
+            try {
+                const user = await User.findOne({ username: value });
+                if (user) {
+                    throw createError("Username already in use!");
+                }
+            } catch (err) {
+                throw createError(err.message);
+            }
+        }),
+    check("country")
+        .isLength({ min: 1 })
+        .withMessage("Country is required")
+        .custom(async (value) => {
+            console.log(value);
+            try {
+
+                if (value == "Select Country") {
+                    throw createError("Please Select Country");
+                }
+            } catch (err) {
+                throw createError(err.message);
+            }
+        }),
     check("number")
         .isLength({ min: 1 })
         .withMessage("Number is required")
@@ -40,69 +69,35 @@ const addUserValidators = [
             try {
                 const user = await User.findOne({ number: value });
                 if (user) {
-                    throw createError("Mobile already is use!");
+                    throw createError("Mobile number already in use!");
                 }
             } catch (err) {
                 throw createError(err.message);
             }
         }),
     check("password")
-        .isStrongPassword()
+        .isLength({ min: 5 })
         .withMessage(
-            "Password must be at least 8 characters long & should contain at least 1 lowercase, 1 uppercase, 1 number & 1 symbol"
-        ),
+            "Pin must be at least 5 digit"
+        )
+        .isInt()
+        .withMessage("Pin Must be Number"),
+    check("password1")
+        .isLength({ min: 1 })
+        .withMessage("Confirm Pin required")
+        .custom((password1, { req }) => {
+            if (password1 !== req.body.password) {
+                return Promise.reject("Pin  does not matched");
+            }
+            return true;
+        }),
     check("user_address")
         .isLength({ min: 1 })
         .withMessage("User Address is required"),
-    check("r_address")
-        .isLength({ min: 1 })
-        .withMessage("Reference Address is required"),
-    check("r_number")
-        .isLength({ min: 1 })
-        .withMessage("Reference Number is required"),
-    check("r_name")
-        .isLength({ min: 1 })
-        .withMessage("Reference Name is required"),
-    check("r_relation")
-        .isLength({ min: 1 })
-        .withMessage("Reference Relation is required"),
     check("shope_name")
         .isLength({ min: 1 })
         .withMessage("shope Name is required"),
-    check("passport_no")
-        .isLength({ min: 1 })
-        .withMessage("Passport Number Relation is required"),
-    check("shop_address")
-        .isLength({ min: 1 })
-        .withMessage("Shop Address is required"),
 
-    check("bank_name")
-        .isLength({ min: 1 })
-        .withMessage("Bank Name is required"),
-    check("account_name")
-        .isLength({ min: 1 })
-        .withMessage("Account Name is required"),
-    check("account_number")
-        .isLength({ min: 1 })
-        .withMessage("Account Number is required"),
-    check("bank_b_name")
-        .isLength({ min: 1 })
-        .withMessage("Brance is required"),
-    check("switt_code")
-        .isLength({ min: 1 })
-        .withMessage("switt code is required"),
-    check("bkash")
-        .isLength({ min: 1 })
-        .withMessage("bkash number is required"),
-    check("nagad")
-        .isLength({ min: 1 })
-        .withMessage("nagad number is required"),
-    check("rocket")
-        .isLength({ min: 1 })
-        .withMessage("rocket number is required"),
-    check("rocket")
-        .isLength({ min: 1 })
-        .withMessage("rocket number is required"),
 ];
 
 const addUserValidationHandler = function (req, res, next) {
@@ -123,7 +118,7 @@ const addUserValidationHandler = function (req, res, next) {
         }
 
         // response the errors
-  
+
         res.status(500).json({
             errors: mappedErrors,
             data: req.body

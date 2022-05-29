@@ -23,7 +23,7 @@ router.post('/add-balance', auth, balanceValidator, balanceValidatorHandle, asyn
 router.get('/all-balance-request', auth, async (req, res) => { // 
 
     try {
-        const { page = 1, limit = 10, status, email } = req.query;
+        const { page = 1, limit = 50, status, email } = req.query;
         const id = req.userId
         if (status && !email) {
             const total = await balance.find({ status: status })

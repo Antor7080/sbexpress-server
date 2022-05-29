@@ -32,7 +32,7 @@ const rechargeController = {
     getRecharge: async (req, res) => {
 
         try {
-            const { page = 1, limit = 10, status, email } = req.query;
+            const { page = 1, limit = 50, status, email } = req.query;
             const id = req.userId;
             if (status && !email) {
                 const total = await recharge.find({ status: status })

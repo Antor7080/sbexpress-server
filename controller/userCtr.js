@@ -11,9 +11,10 @@ const userCtrl = {
 
     register: async (req, res) => {
         try {
-            const { name, email, password, shope_name, shop_address, number, user_address, } = req.body;
+            const { email, password, username } = req.body;
             // Password Encryption
-            const email1 = email.toLowerCase()
+            const email1 = email.toLowerCase();
+            const username1 = username.toLowerCase();
             const passwordHash = await bcrypt.hash(password, 10)
             let newUser;
             if (req.file && req.file.filename) {
@@ -21,13 +22,15 @@ const userCtrl = {
                     ...req.body,
                     avatar: req.file.filename,
                     password: passwordHash,
-                    email: email1
+                    email: email1,
+                    username: username1
                 });
             } else {
                 newUser = new Users({
                     ...req.body,
                     password: passwordHash,
-                    email: email1
+                    email: email1,
+                    username: username1
                 });
             }
             // Save mongodb
@@ -53,8 +56,8 @@ const userCtrl = {
     login: async (req, res) => {
         try {
             const { email, password } = req.body;
-            const user = await Users.findOne({ email });
-
+            const user = await Users.findOne({ "username": email }) || await Users.findOne({ email });
+            console.log(user);
             if (!user) return res.status(400).json({ msg: "User does not exist." })
             const isMatch = await bcrypt.compare(password, user.password)
             if (!isMatch) return res.status(400).json({ msg: "Incorrect password." })
@@ -63,7 +66,6 @@ const userCtrl = {
             }
             const accesstoken = createAccessToken({ id: user._id });
             const refreshtoken = createRefreshToken({ id: user._id });
-
             refreshTokens.push(refreshtoken);
             const userData = { email: user.email, name: user.name, number: user.number, id: user.id, role: user.role, _id: user._id, avatar: user.avatar }
 
@@ -83,7 +85,7 @@ const userCtrl = {
         }
     },
     refreshToken: (req, res) => {
-        const rf_token = req.header("Authorization")
+        const rf_token = req.body.token;
         if (!rf_token) return res.status(400).json({ msg: "Please Login or Register" })
         if (!refreshTokens.includes(rf_token)) {
             res.status(403).json({
@@ -106,9 +108,8 @@ const userCtrl = {
     },
     //get all users
     allUser: async (req, res) => {
-
         try {
-            const { page = 1, limit = 10, status } = req.query;
+            const { page = 1, limit = 50, status } = req.query;
             if (status) {
                 const total = await Users.find({ status: status })
 
@@ -154,6 +155,7 @@ const userCtrl = {
                 let amount = (approvedBalanceAmount - (approveReachargeAmount + pendingReachargeAmount + approvedMobileBankingAmount + pendingMobileBankingAmount))
                 const updateUser = await Users.findOneAndUpdate({ _id: userId }, {
                     $set: {
+                        deposit: approvedBalanceAmount,
                         pending_recaharge: pendingReachargeAmount,
                         total_pending: pendingReacharge.length,
                         amount,
@@ -255,7 +257,7 @@ const userCtrl = {
     }
 }
 const createAccessToken = (user) => {
-    return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '30d' })
+    return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '30s' })
 }
 const createRefreshToken = (user) => {
     return jwt.sign(user, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '7d' })

@@ -22,7 +22,7 @@ const MobileBankingController = {
     getMobileBanking: async (req, res) => {
 
         try {
-            const { page = 1, limit = 10, status, email } = req.query;
+            const { page = 1, limit = 50, status, email } = req.query;
             const id = req.userId;
             if (status && !email) {
                 const total = await mobileBanking.find({ status: status });
@@ -74,8 +74,8 @@ const MobileBankingController = {
 
         try {
             const mobileBanking_request = await mobileBanking
-            .findById(mobileBankingId)
-            .populate("user", "name email -_id shope_name number "); //items.mobileBankingId
+                .findById(mobileBankingId)
+                .populate("user", "name email -_id shope_name number "); //items.mobileBankingId
             res.status(200).json(mobileBanking_request);
         } catch (error) {
             res.status(400).json(error)
